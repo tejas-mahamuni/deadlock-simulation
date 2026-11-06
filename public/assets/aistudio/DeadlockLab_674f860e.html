@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DeadlockLab: learn deadlocks by playing with them</title>
+<style>
+:root{--bg:#fff;--bg2:#f5f5f7;--tx:#1d1d1f;--mu:#6e6e73;--ln:#e5e5ea;--ok:#12a150;--wa:#d97706;--bad:#e5484d;--g:linear-gradient(120deg,#0071e3,#7c3aed 55%,#ec4899);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--bg2:#1c1c1e;--tx:#f5f5f7;--mu:#a1a1a6;--ln:#38383a}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:60px}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:22px;justify-content:center;padding:14px 16px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(18px);border-bottom:1px solid var(--ln);font-size:14px;overflow-x:auto;white-space:nowrap}
+nav a{color:var(--mu);text-decoration:none}nav a:hover{color:var(--tx)}
+section{max-width:980px;margin:0 auto;padding:110px 22px 40px}
+h1{font-size:clamp(44px,8vw,88px);line-height:1.04;letter-spacing:-.035em;margin:0 0 20px;font-weight:700}
+h2{font-size:clamp(32px,5vw,56px);line-height:1.08;letter-spacing:-.03em;margin:0 0 16px;font-weight:700}
+h3{font-size:21px;margin:0 0 6px;letter-spacing:-.01em}
+.g{background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(19px,2.4vw,26px);color:var(--mu);max-width:680px;margin:0 0 36px;line-height:1.4}
+.hero{text-align:center;padding-top:130px}.hero .lead{margin:0 auto 32px}
+.btn{display:inline-block;background:var(--tx);color:var(--bg);border:0;border-radius:980px;padding:12px 26px;font:inherit;font-size:16px;cursor:pointer;text-decoration:none}
+.btn.s{background:var(--bg2);color:var(--tx)}.btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #0071e3;outline-offset:2px}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .8s,transform .8s}.rv.on{opacity:1;transform:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.card{background:var(--bg2);border-radius:26px;padding:26px}.card p{margin:0;color:var(--mu);font-size:15px}
+.stage{background:var(--bg2);border-radius:32px;padding:28px;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--ln)}th{color:var(--mu);font-weight:500;font-size:13px}td:first-child,th:first-child{text-align:left;font-weight:600}
+input[type=number]{width:46px;padding:6px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit;text-align:center}
+select{padding:8px 12px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);font:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.chip{border:1px solid var(--ln);background:var(--bg);color:var(--tx);border-radius:980px;padding:8px 16px;font:inherit;font-size:14px;cursor:pointer}.chip.a{background:var(--tx);color:var(--bg)}
+.res{border-radius:22px;padding:20px 22px;margin-top:18px;border:1.5px solid}
+.res b{font-size:19px}.res p{margin:6px 0 0;color:var(--tx);font-size:15px}
+.st-safe,.st-granted{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--bg))}
+.st-waiting{border-color:var(--wa);background:color-mix(in srgb,var(--wa) 10%,var(--bg))}
+.st-unsafe,.st-deadlock,.st-invalid{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 9%,var(--bg))}
+.seq{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.pill{padding:6px 14px;border-radius:980px;background:var(--bg);border:1px solid var(--ln);font-weight:600;font-size:15px}
+.rings{position:relative;width:min(100%,420px);aspect-ratio:1;margin:0 auto}
+.rings div{position:absolute;border-radius:50%;display:flex;justify-content:center;font-size:14px;font-weight:600;padding-top:3%}
+.small{font-size:14px;color:var(--mu)}
+.dl{display:flex;justify-content:center;gap:60px;align-items:center;flex-wrap:wrap}
+.node{width:78px;height:78px;border-radius:50%;display:grid;place-items:center;font-weight:700;border:3px solid #0071e3}
+.box{width:78px;height:60px;border-radius:14px;display:grid;place-items:center;font-weight:700;border:3px solid #7c3aed}
+@keyframes pulse{50%{box-shadow:0 0 0 14px transparent;border-color:var(--bad)}}
+.dead .node{animation:pulse 1.6s infinite}
+@media(prefers-reduced-motion:reduce){.rv{transition:none;opacity:1;transform:none}.dead .node{animation:none}html{scroll-behavior:auto}}
+footer{text-align:center;color:var(--mu);font-size:14px;padding:70px 20px}
+.scroll{overflow-x:auto}
+</style></head><body><div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useRef}=React;
+const le=(a,b)=>a.every((x,i)=>x<=b[i]),add=(a,b)=>a.map((x,i)=>x+b[i]),sub=(a,b)=>a.map((x,i)=>x-b[i]);
+const P=i=>"P"+i;
+const need=(mx,al)=>mx.map((r,i)=>sub(r,al[i]));
+function safety(av,al,nd){let w=[...av],f=al.map(()=>false),seq=[],steps=[],go=true;
+ while(go){go=false;al.forEach((a,i)=>{if(!f[i]&&le(nd[i],w)){steps.push({p:i,before:[...w],after:add(w,a)});w=add(w,a);f[i]=true;seq.push(i);go=true}})}
+ return{safe:f.every(Boolean),seq,steps}}
+function request(i,rq,av,al,mx){
+ const n=al.length;
+ if(!Number.isInteger(i)||i<0||i>=n)return{st:"invalid",msg:"That process does not exist."};
+ if(rq.some(x=>!Number.isInteger(x)||x<0))return{st:"invalid",msg:"Requests must be whole numbers, zero or more."};
+ const nd=need(mx,al);
+ if(!le(rq,nd[i]))return{st:"invalid",msg:`Request ${JSON.stringify(rq)} is more than ${P(i)}’s remaining need ${JSON.stringify(nd[i])}. A process cannot ask for more than its declared maximum.`};
+ if(!le(rq,av))return{st:"waiting",msg:`The request is within need but only ${JSON.stringify(av)} is free right now. ${P(i)} waits. Nothing changes, and this is not an error.`};
+ const al2=al.map((r,k)=>k===i?add(r,rq):r),av2=sub(av,rq),s=safety(av2,al2,need(mx,al2));
+ return s.safe?{st:"granted",msg:`Pretending to grant it still leaves a safe order: ${s.seq.map(P).join(" → ")}. Request granted.`,al2,av2}
+  :{st:"unsafe",msg:`Pretending to grant it leaves ${JSON.stringify(av2)} free and no process can finish. Request denied and the old state is restored. Unsafe is a warning, not a deadlock yet.`}}
+function detect(av,al,rq){let w=[...av],f=al.map(r=>r.every(x=>x===0)),go=true;
+ const steps=[];while(go){go=false;al.forEach((a,i)=>{if(!f[i]&&le(rq[i],w)){w=add(w,a);f[i]=true;go=true;steps.push(i)}})}
+ return{dead:f.map((x,i)=>x?-1:i).filter(i=>i>=0),steps}}
+const BASE={al:[[0,1,0],[2,0,0],[3,0,2],[2,1,1],[0,0,2]],mx:[[7,5,3],[3,2,2],[9,0,2],[2,2,2],[4,3,3]],av:[3,3,2]};
+const DET={al:[[0,1,0],[2,0,0],[3,0,3],[2,1,1],[0,0,2]],rq:[[0,0,0],[2,0,2],[0,0,1],[1,0,0],[0,0,2]],av:[0,0,0]};
+
+function Rv({children,className=""}){const r=useRef();useEffect(()=>{const o=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add("on")),{threshold:.15});o.observe(r.current);return()=>o.disconnect()},[]);return <div ref={r} className={"rv "+className}>{children}</div>}
+const Res=({r})=>{const t={safe:"Safe",granted:"Granted",waiting:"Waiting",unsafe:"Unsafe, denied",deadlock:"Deadlock detected",invalid:"Invalid input"};return <div className={"res st-"+r.st} role="status"><b>{t[r.st]}</b><p>{r.msg}</p></div>};
+const Num=({v,on})=><input type="number" min="0" value={v} aria-label="value" onChange={e=>on(e.target.value===""?0:parseInt(e.target.value,10))}/>;
+
+function Story(){const [dead,setDead]=useState(false);return <div className="stage"><div className={"dl "+(dead?"dead":"")}>
+ <div style={{textAlign:"center"}}><div className="node">P1</div><div className="small">holds Printer</div></div>
+ <div style={{textAlign:"center"}}><div className="box">Printer</div><div style={{height:18}}/><div className="box">Scanner</div></div>
+ <div style={{textAlign:"center"}}><div className="node">P2</div><div className="small">holds Scanner</div></div></div>
+ <p style={{textAlign:"center",margin:"20px 0 14px"}}>{dead?"P1 wants the Scanner. P2 wants the Printer. Neither can move, ever.":"Two programs share a printer and a scanner. Each grabs one."}</p>
+ <div style={{textAlign:"center"}}><button className="btn" onClick={()=>setDead(!dead)}>{dead?"Start over":"Now each asks for the other"}</button></div></div>}
+
+function Banker(){
+ const [al,setAl]=useState(BASE.al),[mx,setMx]=useState(BASE.mx),[av,setAv]=useState(BASE.av);
+ const [pi,setPi]=useState(1),[rq,setRq]=useState([1,0,2]),[res,setRes]=useState(null);
+ const nd=need(mx,al),s=safety(av,al,nd);
+ const upd=(set,m,i,j,v)=>{const c=m.map(r=>[...r]);c[i][j]=v;set(c);setRes(null)};
+ const load=(i,q)=>{setAl(BASE.al);setMx(BASE.mx);setAv(BASE.av);setPi(i);setRq(q);setRes(request(i,q,BASE.av,BASE.al,BASE.mx))};
+ const go=()=>{const r=request(pi,rq,av,al,mx);setRes(r);if(r.st==="granted"){setAl(r.al2);setAv(r.av2)}};
+ return <div className="stage">
+ <div className="chips"><button className="chip" onClick={()=>load(1,[1,0,2])}>Safe request</button><button className="chip" onClick={()=>load(0,[7,4,3])}>Too big for now</button><button className="chip" onClick={()=>load(0,[0,0,2])}>Risky request</button><button className="chip" onClick={()=>load(0,[8,0,0])}>Invalid request</button><button className="chip" onClick={()=>{setAl(BASE.al);setMx(BASE.mx);setAv(BASE.av);setRes(null)}}>Reset</button></div>
+ <div className="scroll"><table><thead><tr><th>Process</th><th colSpan="3">Holds (Allocation)</th><th colSpan="3">Can ever want (Max)</th><th colSpan="3">Still needs</th></tr></thead><tbody>
+ {al.map((r,i)=><tr key={i}><td>{P(i)}</td>{r.map((v,j)=><td key={j}><Num v={v} on={x=>upd(setAl,al,i,j,x)}/></td>)}{mx[i].map((v,j)=><td key={j}><Num v={v} on={x=>upd(setMx,mx,i,j,x)}/></td>)}{nd[i].map((v,j)=><td key={j} style={{color:v<0?"var(--bad)":"var(--tx)"}}>{v}</td>)}</tr>)}
+ <tr><td>Free (Available)</td>{av.map((v,j)=><td key={j}><Num v={v} on={x=>{const c=[...av];c[j]=x;setAv(c);setRes(null)}}/></td>)}<td colSpan="6" className="small" style={{textAlign:"left"}}>Columns are resources A, B, C. Still needs = Max − Holds.</td></tr></tbody></table></div>
+ {nd.some(r=>r.some(v=>v<0))?<Res r={{st:"invalid",msg:"A process holds more than its maximum. Fix the table so Holds ≤ Max."}}/>:
+ <><h3 style={{marginTop:26}}>Is this state safe?</h3>
+ <p className="small" style={{margin:"0 0 6px"}}>Work starts as the free pool. Any process whose need fits in Work can finish and give its resources back.</p>
+ <div className="scroll"><table><thead><tr><th>Step</th><th>Finishes</th><th>Work before</th><th>Work after</th></tr></thead><tbody>{s.steps.map((t,k)=><tr key={k}><td>{k+1}</td><td>{P(t.p)}</td><td>[{t.before.join(", ")}]</td><td>[{t.after.join(", ")}]</td></tr>)}</tbody></table></div>
+ <Res r={s.safe?{st:"safe",msg:"Safe sequence: "+s.seq.map(P).join(" → ")+". Everyone can finish."}:{st:"unsafe",msg:"No full safe sequence. Stuck processes: "+al.map((_,i)=>i).filter(i=>!s.seq.includes(i)).map(P).join(", ")+". Unsafe means deadlock is possible, not that it has happened."}}/></>}
+ <h3 style={{marginTop:30}}>Ask for resources</h3>
+ <p style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",margin:"8px 0"}}><select aria-label="Process" value={pi} onChange={e=>{setPi(+e.target.value);setRes(null)}}>{al.map((_,i)=><option key={i} value={i}>{P(i)}</option>)}<option value={9}>P9 (does not exist)</option></select>
+ requests {rq.map((v,j)=><span key={j}>{"ABC"[j]} <input type="number" value={v} aria-label={"Request "+"ABC"[j]} onChange={e=>{const c=[...rq];c[j]=parseInt(e.target.value,10);setRq(c);setRes(null)}}/> </span>)}
+ <button className="btn" onClick={go}>Check request</button></p>
+ {res&&<Res r={res}/>}</div>}
+
+function Detect(){
+ const [dead,setDead]=useState(true);
+ const rq=DET.rq.map((r,i)=>i===2&&!dead?[0,0,0]:r);const d=detect(DET.av,DET.al,rq);
+ return <div className="stage"><div className="chips"><button className={"chip "+(dead?"a":"")} onClick={()=>setDead(true)}>P2 wants 1 more C</button><button className={"chip "+(!dead?"a":"")} onClick={()=>setDead(false)}>P2 wants nothing more</button></div>
+ <p className="small" style={{margin:"0 0 8px"}}>Multiple-instance resources (A=7, B=2, C=6). Free pool is [0, 0, 0].</p>
+ <div className="scroll"><table><thead><tr><th>Process</th><th>Holds</th><th>Waiting for</th><th>Result</th></tr></thead><tbody>{DET.al.map((a,i)=><tr key={i}><td>{P(i)}</td><td>[{a.join(", ")}]</td><td>[{rq[i].join(", ")}]</td><td style={{color:d.dead.includes(i)?"var(--bad)":"var(--ok)"}}>{d.dead.includes(i)?"Stuck":"Can finish"}</td></tr>)}</tbody></table></div>
+ {d.dead.length?<Res r={{st:"deadlock",msg:`${d.dead.map(P).join(", ")} wait on each other and no one can release anything. To recover, end ${P(d.dead[1])}: its resources return to the pool and the rest can move.`}}/>:<Res r={{st:"safe",msg:"Finish order: "+d.steps.map(P).join(" → ")+". A waiting graph can look tangled and still have no deadlock."}}/>}</div>}
+
+function Prevent(){
+ const [held,setHeld]=useState(2),[ask,setAsk]=useState(1);const ok=ask>held;
+ return <div className="stage"><p style={{margin:"0 0 10px"}}>Rule: you may only ask for a resource ranked higher than any you hold. No loop can form.</p>
+ <p style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",margin:0}}>Holding rank <input type="number" min="1" value={held} onChange={e=>setHeld(+e.target.value)} aria-label="Held rank"/> asking for rank <input type="number" min="1" value={ask} onChange={e=>setAsk(+e.target.value)} aria-label="Requested rank"/></p>
+ <Res r={ok?{st:"safe",msg:"Allowed. Ranks only go up, so circular wait is impossible."}:{st:"waiting",msg:"Blocked by the ordering rule. Release the higher-ranked resource first, which costs some concurrency."}}/>
+ <div className="grid" style={{marginTop:18}}>{[["Resource ordering","Breaks circular wait. Cost: processes must plan their order."],["Request everything first","Breaks hold and wait. Cost: resources sit idle."],["Kill or preempt","Recovery after the fact. Cost: lost work."]].map(([a,b])=><div className="card" key={a} style={{background:"var(--bg)"}}><h3>{a}</h3><p>{b}</p></div>)}</div></div>}
+
+function Tests(){
+ const cases=[["TC1","Safe state",()=>{const s=safety(BASE.av,BASE.al,need(BASE.mx,BASE.al));return[s.safe?"safe":"unsafe","Sequence "+s.seq.map(P).join(" → ")]},"Safe sequence found"],
+ ["TC2","Request exceeds Available",()=>{const r=request(0,[7,4,3],BASE.av,BASE.al,BASE.mx);return[r.st,"State unchanged"]},"Waiting, not granted"],
+ ["TC3","Request makes state unsafe",()=>{const r=request(0,[0,0,2],BASE.av,BASE.al,BASE.mx);return[r.st,"Denied, state unchanged"]},"Denied, state unchanged"],
+ ["TC4","Deadlocked scenario",()=>{const d=detect(DET.av,DET.al,DET.rq);return[d.dead.length?"deadlock":"safe","Stuck: "+d.dead.map(P).join(", ")]},"Deadlock identified"],
+ ["TC5","Prevention rule applied",()=>[1>2?"safe":"waiting","Rank 1 after rank 2 blocked"],"Circular wait eliminated"],
+ ["TC6","Boundary and invalid input",()=>{const a=request(9,[0,0,0],BASE.av,BASE.al,BASE.mx).st,b=request(0,[-1,0,0],BASE.av,BASE.al,BASE.mx).st,c=request(0,[0,0,0],BASE.av,BASE.al,BASE.mx).st;return[a===b&&b==="invalid"&&c==="granted"?"invalid":"fail","P9 and −1 invalid, zero request fine"]},"Validation message"]];
+ return <div className="stage scroll"><table><thead><tr><th>Test</th><th>Condition</th><th>Actual (live)</th><th>Detail</th><th>Expected</th></tr></thead><tbody>{cases.map(([id,c,f,e])=>{const [s,t]=f();return <tr key={id}><td>{id}</td><td>{c}</td><td style={{fontWeight:600}}>{s}</td><td>{t}</td><td>{e}</td></tr>})}</tbody></table></div>}
+
+function App(){return <>
+<nav>{[["learn","Learn"],["conditions","Four conditions"],["states","Safe vs deadlock"],["bankers","Banker’s lab"],["detect","Detection"],["prevent","Prevention"],["tests","Tests"]].map(([h,t])=><a key={h} href={"#"+h}>{t}</a>)}</nav>
+<section className="hero"><Rv><h1>Deadlock,<br/><span className="g">finally clear.</span></h1><p className="lead">A hands-on guide to how programs get stuck waiting on each other, and how an operating system stays out of trouble.</p><a className="btn" href="#learn">Start learning</a> <a className="btn s" href="#bankers">Skip to the lab</a></Rv></section>
+<section id="learn"><Rv><h2>It starts with two programs.</h2><p className="lead">Computers share things: printers, files, memory. When programs hold one thing while waiting for another, they can freeze together.</p><Story/></Rv></section>
+<section id="conditions"><Rv><h2>Four things must be true.</h2><p className="lead">Deadlock needs all four at once. Remove any one and it cannot happen.</p>
+<div className="grid">{[["Mutual exclusion","Only one program can use a resource at a time."],["Hold and wait","A program keeps what it has while asking for more."],["No preemption","Nobody can take a resource away by force."],["Circular wait","A ring of programs, each waiting for the next."]].map(([a,b])=><div className="card" key={a}><h3>{a}</h3><p>{b}</p></div>)}</div></Rv></section>
+<section id="states"><Rv><h2>Safe, unsafe, deadlocked.</h2><p className="lead">These are not the same. Unsafe only means a stuck future is possible.</p>
+<div className="rings"><div style={{inset:0,background:"color-mix(in srgb,var(--bad) 14%,var(--bg))",color:"var(--bad)"}}>Unsafe</div><div style={{inset:"26% 8% 8% 8%",background:"color-mix(in srgb,var(--bad) 26%,var(--bg))",color:"var(--bad)"}}>Deadlocked</div><div style={{inset:"12% 12% 62% 12%",background:"color-mix(in srgb,var(--ok) 25%,var(--bg))",color:"var(--ok)",borderRadius:"50%"}}>Safe</div></div>
+<p className="small" style={{textAlign:"center"}}>Deadlocked states are a subset of unsafe states. Safe states are separate.</p></Rv></section>
+<section id="bankers"><Rv><h2>Avoid it with the <span className="g">Banker’s Algorithm.</span></h2><p className="lead">Before granting a request, pretend to grant it. If everyone can still finish, say yes. Otherwise say no. Edit any number and watch.</p><Banker/></Rv></section>
+<section id="detect"><Rv><h2>Or let it happen, then <span className="g">detect it.</span></h2><p className="lead">Banker’s prevents trouble. Detection finds trouble that already exists. They are different tools.</p><Detect/></Rv></section>
+<section id="prevent"><Rv><h2>Or design it away.</h2><p className="lead">Break one of the four conditions on purpose.</p><Prevent/></Rv></section>
+<section id="tests"><Rv><h2>Proof, live.</h2><p className="lead">These results come from running the engine above right now.</p><Tests/></Rv></section>
+<footer>DeadlockLab · OS Activity 2</footer></>}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script></body></html>

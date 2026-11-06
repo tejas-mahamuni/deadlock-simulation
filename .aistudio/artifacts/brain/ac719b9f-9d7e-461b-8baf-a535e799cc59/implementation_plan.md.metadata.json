@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation plan for DeadlockLab: an interactive Operating System deadlock learning platform and college assignment dashboard with Banker's avoidance, multi-instance detection, live Resource Allocation Graph, prevention/recovery labs, analytical test suite (TC1-TC6), and 6-minute viva presentation walkthrough.",
+  "updatedAt": "2026-11-06T09:57:10.385740380Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

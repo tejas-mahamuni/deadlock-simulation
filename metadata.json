@@ -1,0 +1,6 @@
+{
+  "name": "DeadlockLab",
+  "description": "Interactive Operating System deadlock visualizer and learning platform featuring Banker's algorithm, live RAG cycle detection, prevention, recovery, and automated analytical testing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
