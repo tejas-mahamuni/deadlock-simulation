@@ -15,6 +15,7 @@ import { PreventSection } from './components/sections/PreventSection.tsx';
 import { ProblemLabSection } from './components/sections/ProblemLabSection.tsx';
 import { TestsSection } from './components/sections/TestsSection.tsx';
 import { GuideSection } from './components/sections/GuideSection.tsx';
+import { AiUsageSection } from './components/sections/AiUsageSection.tsx';
 
 const navItems = [
   { id: 'learn', label: 'Learn' },
@@ -27,6 +28,7 @@ const navItems = [
   { id: 'lab', label: 'Problem Lab' },
   { id: 'tests', label: 'Tests' },
   { id: 'guide', label: 'Guide' },
+  { id: 'ai', label: 'AI & Team' },
 ];
 
 export default function App() {
@@ -61,6 +63,9 @@ export default function App() {
             <a className="btn s" href="#guide">
               6-Min Walkthrough
             </a>
+            <a className="btn s" href="#ai">
+              AI & Team Record
+            </a>
           </div>
         </Rv>
       </section>
@@ -76,12 +81,16 @@ export default function App() {
       <ProblemLabSection />
       <TestsSection />
       <GuideSection />
+      <AiUsageSection />
 
       {/* Clean Apple-style Footer */}
       <footer>
         <p style={{ margin: 0, fontWeight: 600, color: 'var(--tx)' }}>DeadlockLab</p>
         <p style={{ margin: '6px 0 0', color: 'var(--mu)', fontSize: 13 }}>
           Interactive Operating System Concurrency Lab · Pure Algorithmic Engine
+        </p>
+        <p style={{ margin: '10px 0 0', color: 'var(--mu)', fontSize: 13 }}>
+          Team: <strong>Tejas Mahamuni</strong> (202401040036) · <strong>Harshal Mekhe</strong> (202401040051) · <strong>Siddesh Mane</strong> (202401040187) · <strong>Tushar Kaldate</strong> (202401040191)
         </p>
       </footer>
     </>

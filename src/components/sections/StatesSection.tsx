@@ -83,6 +83,63 @@ export const StatesSection: React.FC = () => {
               </p>
             </div>
           </div>
+
+          {/* Deep Conceptual Distinction: Avoidance vs Detection vs Prevention */}
+          <h3 style={{ marginTop: 36, marginBottom: 8 }}>
+            Core Distinction: Avoidance vs. Detection vs. Prevention
+          </h3>
+          <p className="small" style={{ margin: '0 0 16px' }}>
+            A common viva mistake is confusing Banker&apos;s avoidance with deadlock detection. Here is the exact architectural comparison:
+          </p>
+
+          <div className="scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Strategy</th>
+                  <th>When It Executes</th>
+                  <th>Information Required</th>
+                  <th>Algorithm & Mechanism</th>
+                  <th>Overhead & Trade-offs</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ fontWeight: 700, color: '#0071e3' }}>Avoidance (Banker&apos;s)</td>
+                  <td>Proactive: Before granting any resource request</td>
+                  <td>Current Allocation + Declared <em>Maximum Claims</em></td>
+                  <td>
+                    Hypothetically grants request and checks if remaining system has a <em>Safe Sequence</em>. Rolls back if unsafe.
+                  </td>
+                  <td>
+                    O(m·n²) per request. Processes must know maximum demands in advance (rare in general OSs).
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 700, color: 'var(--wa)' }}>Detection</td>
+                  <td>Reactive: Periodically or when throughput drops</td>
+                  <td>Current Allocation + Actual <em>Pending Requests</em></td>
+                  <td>
+                    Matrix reduction (multi-instance) or cycle detection (single-instance RAG) to find currently stuck processes.
+                  </td>
+                  <td>
+                    Zero request-time check overhead. Allows maximum concurrency, but requires costly <em>recovery</em> (terminating processes or rollback).
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 700, color: 'var(--ok)' }}>Prevention</td>
+                  <td>Design-time: In the kernel lock/resource architecture</td>
+                  <td>System-wide resource ordering function (e.g. Havender)</td>
+                  <td>
+                    Eliminates at least 1 of Coffman&apos;s 4 conditions (e.g., enforce strict ascending lock order to eliminate Circular Wait).
+                  </td>
+                  <td>
+                    Zero runtime algorithm overhead, but restricts programmer flexibility and can lower resource utilization.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </Rv>
     </section>

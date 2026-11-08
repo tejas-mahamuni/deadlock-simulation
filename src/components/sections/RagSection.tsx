@@ -187,7 +187,7 @@ export const RagSection: React.FC = () => {
           See loops in the <span className="g">allocation graph.</span>
         </h2>
         <p className="lead">
-          Draw processes (circles) and resources (rectangles). Watch cycles illuminate in real-time. Single-instance cycles mean deadlock; multi-instance cycles require reduction proof.
+          Draw processes (circles) and resources (rectangles). Watch cycles illuminate and flow in real-time. Single-instance cycles mean deadlock; multi-instance cycles require reduction proof.
         </p>
 
         <div className="stage">
@@ -281,13 +281,14 @@ export const RagSection: React.FC = () => {
                   <g key={edge.id} onClick={e => handleEdgeClick(edge.id, e)}>
                     <line x1={f.x} y1={f.y} x2={t.x} y2={t.y} stroke="transparent" strokeWidth="16" />
                     <line
+                      className={isCycle ? 'rag-cycle-edge' : ''}
                       x1={f.x}
                       y1={f.y}
                       x2={t.x}
                       y2={t.y}
                       stroke={isCycle ? '#e5484d' : isAssign ? '#0071e3' : '#d97706'}
                       strokeWidth={isCycle ? '3.5' : '2.5'}
-                      strokeDasharray={isAssign ? 'none' : '6 4'}
+                      strokeDasharray={isCycle ? '8 4' : isAssign ? 'none' : '6 4'}
                       markerEnd={isCycle ? 'url(#arrow-cycle)' : isAssign ? 'url(#arrow-assign)' : 'url(#arrow-request)'}
                     />
                   </g>

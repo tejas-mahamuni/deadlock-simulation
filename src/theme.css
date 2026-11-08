@@ -372,6 +372,16 @@ select {
   border-color: var(--bad);
 }
 
+@keyframes cycleDash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.rag-cycle-edge {
+  animation: cycleDash 0.8s linear infinite;
+}
+
 .rv {
   opacity: 0;
   transform: translateY(28px);
@@ -390,6 +400,9 @@ select {
     transform: none;
   }
   .dead .node {
+    animation: none;
+  }
+  .rag-cycle-edge {
     animation: none;
   }
   html {
